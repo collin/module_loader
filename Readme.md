@@ -13,18 +13,22 @@
 
 ###### There are three options
 
-* env 
+* `env` 
+
   'production' or 'development' (default is development)
 
-* server
+* `server`
+
   Uses the express server api. If you don't provide one one will be made for you at port 2334.
   
-* packages
+* `packages`
+
   A list of npm package names. They will be looked up in ./node_modules
 
 ###### Ignore files you don't want!
 
 * ./.stitchignore
+
   Sort of like .gitiginore, but without any fancy matching. 
   SOME packages will have files that MUST be ignored in the browser.
   MOST packages will have files that SHOULD be ignored in the browser.
