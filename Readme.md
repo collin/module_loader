@@ -1,9 +1,9 @@
-# ModuleLoader
+## ModuleLoader
 ### Another implementation of require for the browser.
-#### Run. For your life.
+# Run. For your life.
 
 
-###### It's pretty easy to set up a server
+#### It's pretty easy to set up a server
 
     ModuleLoader = require("./module_loader")
     new ModuleLoader 
@@ -11,7 +11,7 @@
         # server: require("express").createServer()
         packages: ["underscore", "underscore.string", "jquery", "jwerty", "socket.io-client", "share", "alpha_simprini"]
 
-###### There are three options
+#### There are three options
 
 * `env`: `production` or `development` (default is development)
 
@@ -19,7 +19,7 @@
   
 * `packages`: A list of npm package names. They will be looked up in ./node_modules
 
-###### Ignore files you don't want!
+#### Ignore files you don't want!
 
 * `./.stitchignore`
 
@@ -27,7 +27,7 @@
   SOME packages will have files that MUST be ignored in the browser.
   MOST packages will have files that SHOULD be ignored in the browser.
   
-###### Load the modules 
+#### Load the modules 
 
 * `<!DOCTYPE html>`
     
