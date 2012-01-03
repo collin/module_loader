@@ -1,0 +1,25 @@
+{
+  "author": "Collin Miller <collintmiller@gmail.com>",
+  "name": "module_loader",
+  "description": "Yet another implementation of require for the browser. (RUN AWAY NOW!)",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/collin/module_loader.git"
+  },
+  "main": "lib/module_loader.coffee",
+  "scripts": {
+    "test": "nodeunit test/"
+  },
+  "engines": {
+    "node": "~0.6.6"
+  },
+  "dependencies": {
+    "coffee-script": "1.2.0",
+    "connect": "1.8.5",
+    "express": "2.5.4",
+    "minimatch": "0.0.5",
+    "underscore": "1.2.3"
+  },
+  "devDependencies": {}
+}
