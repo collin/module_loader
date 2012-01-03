@@ -1,5 +1,5 @@
 ## ModuleLoader
-### Another implementation of require for the browser.
+Another implementation of require for the browser.
 # Run. For your life.
 
 
