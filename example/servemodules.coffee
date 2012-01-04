@@ -1,4 +1,4 @@
-ModuleLoader = require("./module_loader")
+ModuleLoader = require("../lib/module_loader")
 new ModuleLoader 
   # env: "production"
-  packages: ["underscore", "underscore.string", "jquery", "jwerty", "socket.io-client", "share", "alpha_simprini"]
+  packages: ["underscore", "underscore.string"]

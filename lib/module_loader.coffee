@@ -4,6 +4,7 @@ fs = require('fs')
 _ = require "underscore"
 CoffeeScript = require 'coffee-script'
 connect = require("connect")
+util = require "util"
 
 walkDirSync = (dir, cb, visited={}) ->
   return if minimatch(dir, "**/node_modules/*/node_modules/**")
@@ -62,8 +63,52 @@ module.exports = class ModuleLoader
     server
   
   bind_server: ->
-    @server.get "/node_modules", (req, res) =>
-      res.send fs.readFileSync "./frameloader.html", "utf8"
+    if @env is "development"
+      @server.get "/node_modules", (req, res) =>
+      
+        packages_listing = []
+        for package in @packages
+          
+          package_details = ""
+          json = require(package+"/package.json")
+          for key, value of json
+            continue unless key in ["name", "version"]
+            package_details += """
+              <pre><strong>#{key}</strong>: #{value}</pre>
+            """
+            
+          packages_listing.push """
+            <code>
+            #{package_details}
+            </code>
+          """
+        
+      
+        html = """
+          <!DOCTYPE hmtl>
+          <html>
+            <head>
+              <title>Node Modules</title>
+              <script src="/node_modules.js"></script>
+              <style>
+                code {
+                  display: block; padding: 0.5em;
+                  background: #fdf6e3; color: #657b83;
+                }
+              </style>
+            </head>
+            <body>
+              <h1>Browser implementation of require.</h1>
+              <h2>Overview of available modules:</h2>
+              #{packages_listing.join('<hr>')}
+              <p>
+                <sub>This listing is only available in development mode.</sub>
+              </p>
+            </body>
+          </html>
+        """
+        
+        res.send html
       
     @server.get "/node_modules.js", (req, res) =>
       res.send @build_universe()

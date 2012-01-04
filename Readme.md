@@ -45,6 +45,12 @@ Another implementation of require for the browser.
 
 # Changelog
 
+#### 0.1.1
+
+* added an overview of loaded packages at /node_modules
+* turned off /node_modules in production mode
+* fixed example servemodules.coffee
+
 #### 0.1.0
 
 * Instition of changelog.
