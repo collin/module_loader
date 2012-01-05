@@ -78,7 +78,7 @@ module.exports = class ModuleLoader
         for package in @packages
           
           package_details = ""
-          json = require(package+"/package")
+          json = require("#{@module_root}/#{package}/package")
           for key, value of json
             continue unless key in ["name", "version"]
             package_details += """
@@ -118,13 +118,17 @@ module.exports = class ModuleLoader
         
         res.send html
       
+      @server.get "/node_modules/*", (req, res) =>
+        res.header('Access-Control-Allow-Origin', "*")
+        res.header('Access-Control-Allow-Methods', 'GET')
+        res.header('Access-Control-Allow-Headers', 'Content-Type')
+      
+        res.send @cache["/"+req.params[0]]
+  
     @server.get "/node_modules.js", (req, res) =>
       @host = req.header("Host")
       res.send @build_universe()
     
-    @server.get "/node_modules/*", (req, res) =>
-      res.send @cache["/"+req.params[0]]
-  
   try_extensions: (path) ->
     if pathname.existsSync(path)
       return path 
@@ -157,6 +161,8 @@ module.exports = class ModuleLoader
       return @compile_cache[path] = compiled 
   
   build_universe: ->
+    ignoreregex = new RegExp(@ignores.join("|"))
+
     # LOAD DEPENDENCY PACKAGES
     for module in @packages
       continue if module.match /^\s+$/
@@ -167,10 +173,12 @@ module.exports = class ModuleLoader
       @mains[module] = @try_extensions pathname.normalize "#{@module_root}/#{module}/#{json.main}"
   
   
-      paths = globSync "#{@module_root}/#{module}", "{lib,src}/**/*.{#{@extensions.join()}}"
-      dirs = globSync "#{@module_root}/#{module}", "{lib,src}/**/*/"
+      paths = globSync "#{@module_root}/#{module}", "{lib,src}/**.{#{@extensions.join()}}"
+      dirs = globSync "#{@module_root}/#{module}", "{lib,src}/**/"
+      dirs = dirs.concat globSync "#{@module_root}/#{module}", "{lib,src}/"
   
       for dir in dirs
+        continue if dir.match(ignoreregex )
         @cache[dir.replace(@module_root, "")] = link: dir.replace(@module_root, "")
     
       @sources[module] = paths
@@ -178,11 +186,9 @@ module.exports = class ModuleLoader
     # COMPILE PACKAGE SOURCES
     for module, paths of @sources
       for path in paths
-        if _(@ignores).detect((ignore) -> return path.indexOf(ignore) isnt -1)
-          continue
-      
+        continue if path.match(ignoreregex)
+        
         source_path = path
-        source_path = "." + path[8..] if path.match(/^\/pasteup/)
         compiled = @compile(source_path)
         
         @cache[path.replace(@module_root, "")] = compiled
