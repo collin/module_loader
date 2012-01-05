@@ -19,15 +19,15 @@ Another implementation of require for the browser.
 
 * `packages`: (REQUIRED) A list of npm package names. They will be looked up in ./node_modules
 
-* `ignorepath`: (RECCOMENDED) A path to a .stitchignore file, with patterns of files to ignore when packing and requiring.
+* `ignorepath`: (RECCOMENDED) A path to a file with patterns of files to ignore when packing and requiring.
 
 * `env`: `production` or `development` (default is development)
 
 * `server`: Uses the express server api. If you don't provide one one will be made for you at port 2334.
 
-#### Ignore files you don't want!
+#### Ignoring files you don't want!
 
-* `ignorepath: ./.moduleignore`
+* `ignorepath: './.moduleignore'`
 
   Sort of like .gitiginore, but without any fancy matching. 
   SOME packages will have files that MUST be ignored in the browser.
