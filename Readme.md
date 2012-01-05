@@ -33,13 +33,13 @@ Another implementation of require for the browser.
   SOME packages will have files that MUST be ignored in the browser.
   MOST packages will have files that SHOULD be ignored in the browser.
   
-#### Load the modules 
+#### Using it 
 
-* `<!DOCTYPE html>`
-    
+Load the  node_modules.js script:
+
     <script type="text/javascript" src="//localhost:2334/node_modules.js"></script>
 
-* `use it`
+And require your modules:
 
     _ = require("underscore")
 
