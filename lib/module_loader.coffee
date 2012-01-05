@@ -34,7 +34,13 @@ globSync = (base, pattern) ->
 
 module.exports = class ModuleLoader
   constructor: (options={}) ->
-    @server = options.server || @create_server()
+    @create_server(options.server)
+
+    if not options.module_root
+      throw new Error("Specify a full path to the node_modules/ directory : module_root: PATH")
+
+    @module_root = options.module_root
+
     @env = options.env || "development"
     @ignorepath = options.ignorepath || "./.stitchignore"
     @extensions = _(options.extensions || "js coffee json".split(/\s+/))
@@ -56,11 +62,13 @@ module.exports = class ModuleLoader
     
     @bind_server()
     
-  create_server: ->
-    server = require("express").createServer(connect.logger()).listen(2334||process.env.PORT)
-    address = server.address()
-    console.info "Serving modules at http://#{address.address}:#{address.port}/node_modules.js"
-    server
+  create_server: (@server) ->
+    unless @server
+      @server = require("express").createServer(connect.logger())
+      @server.listen 2334 or process.env.PORT, =>
+        address = @server.address()
+        @port = address.port
+        console.info "Serving modules at http://#{address.address}:#{address.port}/node_modules.js"
   
   bind_server: ->
     if @env is "development"
@@ -70,7 +78,7 @@ module.exports = class ModuleLoader
         for package in @packages
           
           package_details = ""
-          json = require(package+"/package.json")
+          json = require(package+"/package")
           for key, value of json
             continue unless key in ["name", "version"]
             package_details += """
@@ -111,6 +119,7 @@ module.exports = class ModuleLoader
         res.send html
       
     @server.get "/node_modules.js", (req, res) =>
+      @host = req.header("Host")
       res.send @build_universe()
     
     @server.get "/node_modules/*", (req, res) =>
@@ -151,18 +160,18 @@ module.exports = class ModuleLoader
     # LOAD DEPENDENCY PACKAGES
     for module in @packages
       continue if module.match /^\s+$/
-      try
-        json = require "#{module}/package"
-      catch err
-        throw new Error "Error parsing package.json #{module}", err
-      @mains[module] = @try_extensions pathname.normalize "./node_modules/#{module}/#{json.main}"
+      # try
+      json = require "#{@module_root}/#{module}/package"
+      # catch err
+      #   throw new Error "Error parsing package.json #{module}", err
+      @mains[module] = @try_extensions pathname.normalize "#{@module_root}/#{module}/#{json.main}"
   
   
-      paths = globSync "./node_modules/#{module}", "{lib,src}/**/*.{#{@extensions.join()}}"
-      dirs = globSync "./node_modules/#{module}", "{lib,src}/**/*/"
+      paths = globSync "#{@module_root}/#{module}", "{lib,src}/**/*.{#{@extensions.join()}}"
+      dirs = globSync "#{@module_root}/#{module}", "{lib,src}/**/*/"
   
       for dir in dirs
-        @cache[dir.replace("./node_modules", "")] = link: dir.replace("./node_modules", "")
+        @cache[dir.replace(@module_root, "")] = link: dir.replace(@module_root, "")
     
       @sources[module] = paths
     
@@ -175,12 +184,13 @@ module.exports = class ModuleLoader
         source_path = path
         source_path = "." + path[8..] if path.match(/^\/pasteup/)
         compiled = @compile(source_path)
-        @cache[path.replace("./node_modules", "")] = compiled
+        
+        @cache[path.replace(@module_root, "")] = compiled
 
     # COMPILE MAINS SOURCES
     for module, path of @mains
-      @cache[module] = link: path.replace("node_modules", "")
-      @cache[path.replace("node_modules", "")] = @compile(path)
+      @cache[module] = link: path.replace(@module_root, "")
+      @cache[path.replace(@module_root, "")] = @compile(path)
 
     universe = """
       (function() {
@@ -257,7 +267,7 @@ module.exports = class ModuleLoader
     if @env is "production"
       # PRODUCTION
       for path, object of @cache
-        key = path.replace(/\.(coffee|json|js)$/, '')
+        key = path.replace(/\.(coffee|json|js)$/, '').replace(@module_root, "")
         if _.isString object
           universe  += """
       
@@ -290,7 +300,7 @@ module.exports = class ModuleLoader
       # DEVELOPMENT
   
       for path, object of @cache
-        key = path.replace(/\.(coffee|json|js)$/, '')
+        key = path.replace(/\.(coffee|json|js)$/, '').replace(@module_root, "")
         if _.isString object
           universe  += """
       
@@ -308,7 +318,7 @@ module.exports = class ModuleLoader
               var href = window.location.href;
 
               var xhr = new XMLHttpRequest();
-              xhr.open('GET', "/node_modules#{path}", false);
+              xhr.open('GET', "//#{@host}/node_modules#{path}", false);
               xhr.send(null);
               var rawScript = xhr.responseText;
               script = document.createElement("script");

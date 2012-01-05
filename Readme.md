@@ -4,20 +4,24 @@ Another implementation of require for the browser.
 
 
 #### It's pretty easy to set up a server
-
+    
+    pathname = require("path")
     ModuleLoader = require("./module_loader")
     new ModuleLoader 
         # env: "production"
         # server: require("express").createServer()
+        module_root: pathname.resolve("./node_modules")
         packages: ["underscore", "underscore.string", "jquery", "jwerty", "socket.io-client", "share", "alpha_simprini"]
 
-#### There are three options
+#### There are four options
+
+* `module_root`: (REQUIRED) A fully resolved path which is the node_modules directory to load code from.
+
+* `packages`: (REQUIRED) A list of npm package names. They will be looked up in ./node_modules
 
 * `env`: `production` or `development` (default is development)
 
 * `server`: Uses the express server api. If you don't provide one one will be made for you at port 2334.
-  
-* `packages`: A list of npm package names. They will be looked up in ./node_modules
 
 #### Ignore files you don't want!
 
@@ -35,8 +39,7 @@ Another implementation of require for the browser.
 
 * `use it`
 
-    underscore = require("underscore")
-
+    _ = require("underscore")
 
 #### KNOWN ISSUES
 
@@ -44,6 +47,10 @@ Another implementation of require for the browser.
 
 
 # Changelog
+
+#### 0.2.0
+
+* added module_root option. This allows the loader to see the node_modules you want it to, otherwise it was just loading from the node_modules of module_loader, which wasn't what you wanted it to do at all.
 
 #### 0.1.1
 
