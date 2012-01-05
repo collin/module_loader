@@ -10,6 +10,7 @@ Another implementation of require for the browser.
     new ModuleLoader 
         # env: "production"
         # server: require("express").createServer()
+        ignorepath: pathname.resolve("./.ignoremodules")
         module_root: pathname.resolve("./node_modules")
         packages: ["underscore", "underscore.string", "jquery", "jwerty", "socket.io-client", "share", "alpha_simprini"]
 
